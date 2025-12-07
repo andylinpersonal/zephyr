@@ -14,6 +14,7 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/arch/exception.h>
+#include <zephyr/task_wdt/task_wdt.h>
 #include <kernel_arch_data.h>
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(os, CONFIG_KERNEL_LOG_LEVEL);
@@ -70,6 +71,11 @@ static void esf_dump(const struct arch_esf *esf)
 void z_arm_fatal_error(unsigned int reason, const struct arch_esf *esf)
 {
 #ifdef CONFIG_EXCEPTION_DEBUG
+	/* Suspend Task WDT to fully print out exception info. */
+#if defined(CONFIG_TASK_WDT)
+	task_wdt_suspend();
+#endif
+
 	if (esf != NULL) {
 		esf_dump(esf);
 	}
