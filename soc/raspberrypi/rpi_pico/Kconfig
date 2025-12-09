@@ -13,4 +13,10 @@ config RPI_PICO_ROM_BOOTLOADER
 	default y
 	depends on RETENTION_BOOT_MODE
 
+config RPI_PICO_USE_ROMFUNC
+	bool "Enable this to enable ROM function in MPU"
+	depends on !NULL_POINTER_EXCEPTION_DETECTION_MPU
+	help
+	  Enable ROM region in MPU if needed.
+
 endif # SOC_FAMILY_RPI_PICO
