@@ -239,4 +239,5 @@ if(CONFIG_HAS_RPI_PICO)
 
   add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico_mem_ops)
   add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico_int64_ops)
+  add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico_bit_ops)
 endif()

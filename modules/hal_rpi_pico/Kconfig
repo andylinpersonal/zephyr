@@ -65,6 +65,24 @@ config PICOSDK_USE_RAND
 	help
 	  Use the "rand" driver from pico-sdk
 
+config PICOSDK_USE_BITOPS
+	bool "Use optimized bitops functions."
+	select NEED_LIBC_MEM_PARTITION if SOC_SERIES_RP2040
+	select RPI_PICO_USE_ROMFUNC if SOC_SERIES_RP2040
+	help
+	  Use optimized bitops functions. For RP2040, this option will use the ROM
+	  implementation.
+
+config PICOSDK_BITOPS_IN_RAM
+	bool "Put wrapper of bitops functions into SRAM"
+	default n
+	depends on PICOSDK_USE_BITOPS
+	depends on !(MPU && SOC_SERIES_RP2040)
+	help
+	  Put wrapper of bitops functions into SRAM. Incompatible with
+	  (MPU && SOC_SERIES_RP2040) because initializer itself requires bitops
+	  to work but in-RAM function table is still uninitialized.
+
 config PICOSDK_USE_ROM_MEMOPS
 	bool "Use ROM implementation of memcpy and memset."
 	select NEED_LIBC_MEM_PARTITION
