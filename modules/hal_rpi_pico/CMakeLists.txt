@@ -236,4 +236,6 @@ if(CONFIG_HAS_RPI_PICO)
 
   set(pico_shared_data_section "data_smem_z_libc_partition_data")
   set(pico_module_dir "${CMAKE_CURRENT_LIST_DIR}")
+
+  add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico_mem_ops)
 endif()

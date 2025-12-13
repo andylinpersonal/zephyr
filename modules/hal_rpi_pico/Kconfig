@@ -64,3 +64,18 @@ config PICOSDK_USE_RAND
 	bool
 	help
 	  Use the "rand" driver from pico-sdk
+
+config PICOSDK_USE_ROM_MEMOPS
+	bool "Use ROM implementation of memcpy and memset."
+	select NEED_LIBC_MEM_PARTITION
+	select RPI_PICO_USE_ROMFUNC
+	depends on SOC_SERIES_RP2040
+	help
+	  Use ROM memcpy and memset.
+
+config PICOSDK_MEMOPS_IN_RAM
+	bool "Put wrapper of memcpy and memset into SRAM"
+	default n
+	depends on PICOSDK_USE_ROM_MEMOPS
+	help
+	  Put wrapper of memcpy and memset into SRAM.
