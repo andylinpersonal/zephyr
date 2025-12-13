@@ -186,10 +186,54 @@ if(CONFIG_HAS_RPI_PICO)
   zephyr_library_sources_ifdef(CONFIG_RISCV
           ${rp2_common_dir}/hardware_irq/irq.c)
 
-  zephyr_library_sources_ifdef(CONFIG_SOC_SERIES_RP2350
+  zephyr_library_sources(
           ${rp2_common_dir}/pico_runtime_init/runtime_init.c)
-  zephyr_include_directories_ifdef(CONFIG_SOC_SERIES_RP2350
+  zephyr_include_directories(
           ${rp2_common_dir}/pico_runtime/include
           ${rp2_common_dir}/pico_runtime_init/include)
 
+  function(pico_wrap_function FUNCNAME)
+    target_link_options(zephyr_interface INTERFACE "LINKER:--wrap=${FUNCNAME}")
+  endfunction()
+
+  function(pico_patch_sdk_file)
+    # PRE_PATCH_HOOKS will be evaluated on the target of original SOURCE as pre_patch_hook(target source)
+    # GEN_OBJCOPY_ARGS will be evaluated to get the objcopy arguments as gen_objcopy_arg()
+    #   Return value should be put to `ret_objcopy_args` as list.
+    cmake_parse_arguments(PARSE_ARGV 0 ARG "" "PREFIX;SOURCE" "PRE_PATCH_HOOKS;GEN_OBJCOPY_ARGS")
+    set(custom_keywords "COND_OBJCOPY_ARGS;COND_COMPILER_OPTIONS")
+    add_library(${ARG_PREFIX}_target OBJECT "${ARG_SOURCE}")
+    # Import global configurations
+    target_link_libraries(${ARG_PREFIX}_target PUBLIC zephyr_interface)
+    set(sdk_obj "$<TARGET_OBJECTS:${ARG_PREFIX}_target>")
+
+    foreach(pre_patch_hook IN LISTS ARG_PRE_PATCH_HOOKS)
+      cmake_language(EVAL CODE "${pre_patch_hook}(${ARG_PREFIX}_target \"${ARG_SOURCE}\")")
+    endforeach()
+
+    foreach(get_objcopy_arg IN LISTS ARG_GEN_OBJCOPY_ARGS)
+      cmake_language(EVAL CODE "${get_objcopy_arg}(${ARG_PREFIX}_target)")
+      if(ret_objcopy_args)
+        list(APPEND objcopy_args ${ret_objcopy_args})
+      endif()
+    endforeach()
+
+    get_filename_component(source_filename "${ARG_SOURCE}" NAME)
+    set(patched_obj "${CMAKE_CURRENT_BINARY_DIR}/${source_filename}.patched${CMAKE_ASM_OUTPUT_EXTENSION}")
+    add_custom_command(
+      OUTPUT  "${patched_obj}"
+      COMMAND "${CMAKE_OBJCOPY}"
+      ARGS     ${objcopy_args} "${sdk_obj}" "${patched_obj}"
+      DEPENDS "${sdk_obj}")
+    set_source_files_properties("${patched_obj}" PROPERTIES GENERATED TRUE)
+
+    add_library(${ARG_PREFIX}_target_patched STATIC "${patched_obj}")
+    set_target_properties(${ARG_PREFIX}_target_patched PROPERTIES LINKER_LANGUAGE ASM)
+    target_link_libraries(${ARG_PREFIX}_target_patched PUBLIC zephyr_interface)
+
+    target_link_libraries(${ZEPHYR_CURRENT_LIBRARY} PRIVATE ${ARG_PREFIX}_target_patched)
+  endfunction()
+
+  set(pico_shared_data_section "data_smem_z_libc_partition_data")
+  set(pico_module_dir "${CMAKE_CURRENT_LIST_DIR}")
 endif()
