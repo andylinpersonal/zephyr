@@ -30,6 +30,10 @@
 #include <kernel_arch_data.h>
 #include <kernel_offsets.h>
 
+#if defined(CONFIG_ARM_SOC_OFFSETS)
+#include <soc_offsets.h>
+#endif
+
 GEN_OFFSET_SYM(_thread_arch_t, basepri);
 GEN_OFFSET_SYM(_thread_arch_t, swap_return_value);
 
@@ -82,6 +86,10 @@ GEN_ABSOLUTE_SYM(___extra_esf_info_t_SIZEOF, sizeof(struct __extra_esf_info));
 
 #if defined(CONFIG_THREAD_STACK_INFO)
 GEN_OFFSET_SYM(_thread_stack_info_t, start);
+#endif
+
+#if defined(CONFIG_ARM_SOC_OFFSETS)
+GEN_SOC_OFFSET_SYMS();
 #endif
 
 /*

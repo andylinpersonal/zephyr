@@ -229,4 +229,16 @@ config ARM_VECTOR_TABLE_ITCM
 
 endchoice
 
+config ARM_SOC_OFFSETS
+	bool "SOC-based offsets"
+	help
+	  Enabling this option requires that the SoC provide a soc_offsets.h
+	  header which defines the following macros:
+
+	  - GEN_SOC_OFFSET_SYMS(): a macro which expands to
+	    GEN_OFFSET_SYM(soc_esf_t, soc_specific_member) calls
+	    to ensure offset macros for SOC_ESF_MEMBERS are defined
+	    in offsets.h. The last one should not end in a semicolon.
+	    See gen_offset.h for more details.
+
 endmenu
