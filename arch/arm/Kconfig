@@ -262,6 +262,11 @@ config ARM_SOC_CONTEXT_SAVE
 
 	  ``void __soc_restore_context(soc_esf_t *state);``
 
+	  Additionally, on fatal error, soc_esf_t can be dumped in human-friendly
+	  way by implementing the following function:
+
+	  ``void __soc_dump_context(soc_esf_t *state);``
+
 	  The calls obey standard calling conventions; i.e., the state
 	  pointer address is in r0, and lr contains the return address.
 

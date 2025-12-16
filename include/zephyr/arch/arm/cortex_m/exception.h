@@ -113,6 +113,7 @@ typedef struct soc_esf soc_esf_t;
 
 extern void __soc_save_context(soc_esf_t *soc_context);
 extern void __soc_restore_context(soc_esf_t *soc_context);
+extern void __soc_dump_context(soc_esf_t *soc_context);
 #endif
 
 /* Additional register state that is not stacked by hardware on exception

@@ -62,6 +62,12 @@ static void esf_dump(const struct arch_esf *esf)
 
 	EXCEPTION_DUMP("EXC_RETURN: 0x%0x", esf->extra_info.exc_return);
 
+#if defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+	if (esf->extra_info.soc_context != NULL) {
+		__soc_dump_context(esf->extra_info.soc_context);
+	}
+#endif
+
 #endif /* CONFIG_EXTRA_EXCEPTION_INFO */
 	EXCEPTION_DUMP("Faulting instruction address (r15/pc): 0x%08x",
 		esf->basic.pc);
@@ -142,11 +148,21 @@ void z_do_kernel_oops(const struct arch_esf *esf, _callee_saved_t *callee_regs, 
 #else
 	struct arch_esf esf_copy;
 
+#if defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+	/* Save the SoC-specific context before any further operation. */
+	struct soc_esf soc_context;
+
+	__soc_save_context(&soc_context);
+#endif
+
 	memcpy(&esf_copy, esf, offsetof(struct arch_esf, extra_info));
 	/* extra exception info is collected in callee_reg. */
 
 	esf_copy.extra_info = (struct __extra_esf_info) {
 		.callee = callee_regs,
+#if defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+		.soc_context = &soc_context,
+#endif
 	};
 
 	z_arm_fatal_error(reason, &esf_copy);

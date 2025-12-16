@@ -15,6 +15,7 @@
 #include <zephyr/kernel.h>
 #include <kernel_internal.h>
 #include <inttypes.h>
+#include <zephyr/arch/arm/cortex_m/exception.h>
 #include <zephyr/arch/exception.h>
 #include <zephyr/arch/common/exc_handle.h>
 #include <zephyr/linker/linker-defs.h>
@@ -1034,6 +1035,13 @@ void z_arm_fault(uint32_t msp, uint32_t psp, uint32_t exc_return, _callee_saved_
 	 */
 	struct arch_esf esf_copy;
 
+#if defined(CONFIG_EXTRA_EXCEPTION_INFO) && defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+	/* Save the SoC-specific context before any further operation. */
+	struct soc_esf soc_context;
+
+	__soc_save_context(&soc_context);
+#endif
+
 	/* Force unlock interrupts */
 	arch_irq_unlock(0);
 
@@ -1060,7 +1068,11 @@ void z_arm_fault(uint32_t msp, uint32_t psp, uint32_t exc_return, _callee_saved_
 	 */
 	memcpy(&esf_copy, esf, offsetof(struct arch_esf, extra_info));
 	esf_copy.extra_info = (struct __extra_esf_info){
-		.callee = callee_regs, .exc_return = exc_return, .msp = msp};
+		.callee = callee_regs,
+#if defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+		.soc_context = &soc_context,
+#endif
+		.exc_return = exc_return, .msp = msp};
 #endif /* CONFIG_EXTRA_EXCEPTION_INFO */
 
 	/* Overwrite stacked IPSR to mark a nested exception,
