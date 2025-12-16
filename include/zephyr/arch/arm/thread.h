@@ -22,6 +22,7 @@
 
 #ifndef _ASMLANGUAGE
 #include <zephyr/types.h>
+#include <zephyr/arch/arm/exception.h>
 
 struct _callee_saved {
 	uint32_t v1;  /* r4 */
@@ -147,6 +148,10 @@ struct _thread_arch {
 
 #if defined(CONFIG_ARM_PAC_PER_THREAD)
 	struct pac_keys pac_keys;
+#endif
+
+#if defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+	struct soc_esf soc_context;
 #endif
 };
 

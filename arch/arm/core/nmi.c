@@ -19,6 +19,7 @@
 #include <zephyr/sys/reboot.h>
 #include <zephyr/toolchain.h>
 #include <zephyr/linker/sections.h>
+#include <zephyr/arch/arm/exception.h>
 
 extern void z_SysNmiOnReset(void);
 #if !defined(CONFIG_RUNTIME_NMI)
@@ -55,6 +56,17 @@ void z_arm_nmi_set_handler(void (*pHandler)(void))
 
 void z_arm_nmi(void)
 {
+#ifdef CONFIG_ARM_SOC_CONTEXT_SAVE
+	struct soc_esf soc_context;
+
+	__soc_save_context(&soc_context);
+#endif
+
 	handler();
+
+#ifdef CONFIG_ARM_SOC_CONTEXT_SAVE
+	__soc_restore_context(&soc_context);
+#endif
+
 	z_arm_int_exit();
 }

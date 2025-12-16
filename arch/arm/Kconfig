@@ -229,6 +229,42 @@ config ARM_VECTOR_TABLE_ITCM
 
 endchoice
 
+config ARM_SOC_CONTEXT_SAVE
+	bool "SOC-specific context saving in IRQ handlers"
+	select ARM_SOC_OFFSETS
+	depends on CPU_CORTEX_M
+	help
+	  Enable low-level SOC-specific context management, for SOCs
+	  with extra state that must be saved when entering an
+	  interrupt/exception, and restored on exit. If unsure, leave
+	  this at the default value.
+
+	  Enabling this option requires that the SoC provide a
+	  soc_esf.h header which defines the following macros:
+
+	  - SOC_ESF_MEMBERS: structure component declarations to
+	    allocate space for. The last such declaration should not
+	    end in a semicolon, for portability. The generic ARM
+	    architecture code will allocate space for these members in
+	    a "struct soc_esf" type (typedefed to soc_esf_t), which will
+	    be available if arch.h is included.
+
+	  - SOC_ESF_INIT: structure contents initializer for struct soc_esf
+	    state. The last initialized member should not end in a comma.
+
+	  The generic architecture IRQ wrapper will also call
+	  \_\_soc_save_context and \_\_soc_restore_context routines at
+	  ISR entry and exit, respectively. These should typically
+	  be implemented in assembly. If they were C functions, they
+	  would have these signatures:
+
+	  ``void __soc_save_context(soc_esf_t *state);``
+
+	  ``void __soc_restore_context(soc_esf_t *state);``
+
+	  The calls obey standard calling conventions; i.e., the state
+	  pointer address is in r0, and lr contains the return address.
+
 config ARM_SOC_OFFSETS
 	bool "SOC-based offsets"
 	help

@@ -17,6 +17,7 @@
 #include <zephyr/irq.h>
 #include <zephyr/pm/pm.h>
 #include <cmsis_core.h>
+#include <zephyr/arch/arm/cortex_m/exception.h>
 
 /**
  *
@@ -32,6 +33,12 @@
  */
 void _isr_wrapper(void)
 {
+#ifdef CONFIG_ARM_SOC_CONTEXT_SAVE
+	struct soc_esf soc_context;
+
+	__soc_save_context(&soc_context);
+#endif
+
 #ifdef CONFIG_TRACING_ISR
 	sys_trace_isr_enter();
 #endif /* CONFIG_TRACING_ISR */
@@ -86,6 +93,10 @@ void _isr_wrapper(void)
 #ifdef CONFIG_TRACING_ISR
 	sys_trace_isr_exit();
 #endif /* CONFIG_TRACING_ISR */
+
+#ifdef CONFIG_ARM_SOC_CONTEXT_SAVE
+	__soc_restore_context(&soc_context);
+#endif
 
 	z_arm_exc_exit();
 }

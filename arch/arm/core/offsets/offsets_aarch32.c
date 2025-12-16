@@ -29,7 +29,12 @@
 #include <zephyr/kernel.h>
 #include <kernel_arch_data.h>
 #include <kernel_offsets.h>
+#include <zephyr/arch/arm/exception.h>
+#include <zephyr/arch/arm/thread.h>
 
+#if defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+#include <soc_context.h>
+#endif
 #if defined(CONFIG_ARM_SOC_OFFSETS)
 #include <soc_offsets.h>
 #endif
@@ -65,6 +70,10 @@ GEN_OFFSET_SYM(_thread_arch_t, sp_usr);
 GEN_OFFSET_SYM(_thread_arch_t, preempt_float);
 #endif
 
+#if defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+GEN_OFFSET_SYM(_thread_arch_t, soc_context);
+#endif
+
 GEN_OFFSET_SYM(_basic_sf_t, pc);
 GEN_OFFSET_SYM(_basic_sf_t, xpsr);
 
@@ -82,6 +91,14 @@ GEN_ABSOLUTE_SYM(___callee_saved_t_SIZEOF, sizeof(struct _callee_saved));
 
 #if defined(CONFIG_EXTRA_EXCEPTION_INFO)
 GEN_ABSOLUTE_SYM(___extra_esf_info_t_SIZEOF, sizeof(struct __extra_esf_info));
+#endif
+
+#if defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+GEN_ABSOLUTE_SYM(___soc_esf_t_SIZEOF, sizeof(struct soc_esf));
+#endif
+
+#if defined(CONFIG_ARM_SOC_OFFSETS)
+GEN_SOC_OFFSET_SYMS();
 #endif
 
 #if defined(CONFIG_THREAD_STACK_INFO)

@@ -65,6 +65,11 @@
 	(___thread_t_arch_OFFSET + ___thread_arch_t_pac_keys_OFFSET)
 #endif
 
+#if defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+#define _thread_offset_to_soc_context \
+	(___thread_t_arch_OFFSET + ___thread_arch_t_soc_context_OFFSET)
+#endif
+
 /* end - threads */
 
 #endif /* ZEPHYR_ARCH_ARM_INCLUDE_OFFSETS_SHORT_ARCH_H_ */

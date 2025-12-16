@@ -13,6 +13,10 @@
 #include <zephyr/drivers/counter.h>
 #include <zephyr/devicetree.h>
 
+#if defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+#include <zephyr/arch/arm/cortex_m/exception.h>
+#endif
+
 #include "cortex_m_systick.h"
 
 #define COUNTER_MAX 0x00ffffff
@@ -282,6 +286,12 @@ static uint32_t elapsed(void)
 ARCH_ISR_DIAG_OFF
 __attribute__((interrupt("IRQ"))) void sys_clock_isr(void)
 {
+#ifdef CONFIG_ARM_SOC_CONTEXT_SAVE
+	struct soc_esf soc_context;
+
+	__soc_save_context(&soc_context);
+#endif
+
 #ifdef CONFIG_TRACING_ISR
 	sys_trace_isr_enter();
 #endif /* CONFIG_TRACING_ISR */
@@ -338,6 +348,10 @@ __attribute__((interrupt("IRQ"))) void sys_clock_isr(void)
 #ifdef CONFIG_TRACING_ISR
 	sys_trace_isr_exit();
 #endif /* CONFIG_TRACING_ISR */
+
+#ifdef CONFIG_ARM_SOC_CONTEXT_SAVE
+	__soc_restore_context(&soc_context);
+#endif
 
 	z_arm_int_exit();
 }

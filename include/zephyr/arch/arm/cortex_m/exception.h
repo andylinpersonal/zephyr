@@ -61,6 +61,10 @@ GTEXT(z_arm_exc_exit);
 #else
 #include <zephyr/types.h>
 
+#if defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+#include <soc_context.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -84,6 +88,33 @@ struct __fpu_sf {
 };
 #endif
 
+/*
+ * The name of the structure which contains soc-specific state, if
+ * any, as well as the soc_esf_t typedef below, are part of the ARM
+ * arch API.
+ *
+ * The contents of the struct are provided by a SOC-specific
+ * definition in soc_context.h.
+ */
+#if defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+
+/* May live on stack so the AAPCS32 alignment rules must be obeyed. */
+#ifdef CONFIG_STACK_ALIGN_DOUBLE_WORD
+#define SOC_ESF_ALIGN 8
+#else
+#define SOC_ESF_ALIGN 4
+#endif
+
+struct soc_esf {
+	SOC_ESF_MEMBERS;
+} __aligned(SOC_ESF_ALIGN);
+
+typedef struct soc_esf soc_esf_t;
+
+extern void __soc_save_context(soc_esf_t *soc_context);
+extern void __soc_restore_context(soc_esf_t *soc_context);
+#endif
+
 /* Additional register state that is not stacked by hardware on exception
  * entry.
  *
@@ -91,8 +122,13 @@ struct __fpu_sf {
  * When information for a member is unavailable, the field is set to zero.
  */
 #if defined(CONFIG_EXTRA_EXCEPTION_INFO)
+typedef struct _callee_saved _callee_saved_t;
+
 struct __extra_esf_info {
 	_callee_saved_t *callee;
+#if defined(CONFIG_ARM_SOC_CONTEXT_SAVE)
+	soc_esf_t *soc_context;
+#endif
 	uint32_t msp;
 	uint32_t exc_return;
 };

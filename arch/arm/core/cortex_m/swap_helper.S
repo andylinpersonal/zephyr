@@ -38,6 +38,11 @@ GDATA(_kernel)
 GDATA(z_arm_tls_ptr)
 #endif
 
+#ifdef CONFIG_RISCV_SOC_CONTEXT_SAVE
+GTEXT(__soc_save_context)
+GTEXT(__soc_restore_context)
+#endif /* CONFIG_RISCV_SOC_CONTEXT_SAVE */
+
 /**
  *
  * @brief PendSV exception handler, handling context switches
@@ -75,6 +80,20 @@ SECTION_FUNC(TEXT, z_arm_pendsv)
     /* Store LSB of LR (EXC_RETURN) to the thread's 'mode' word. */
     strb lr, [r2, #_thread_offset_to_mode_exc_return]
 #endif
+
+#ifdef CONFIG_ARM_SOC_CONTEXT_SAVE
+    push {r0-r2, lr} /* Also push r0 due to 8B alignment of stack. */
+    /* addr of _current->arch.soc_context in thread in r0 */
+    ldr r0, =_thread_offset_to_soc_context
+    add r0, r2
+    bl __soc_save_context /* __soc_save_context(&soc_context) */
+#if defined(CONFIG_ARMV6_M_ARMV8_M_BASELINE)
+    pop {r0-r3}
+    mov lr, r3
+#else
+    pop {r0-r2, lr}
+#endif /* CONFIG_ARMV6_M_ARMV8_M_BASELINE */
+#endif /* CONFIG_ARM_SOC_CONTEXT_SAVE */
 
     /* addr of callee-saved regs in thread in r0 */
     ldr r0, =_thread_offset_to_callee_saved
@@ -348,6 +367,20 @@ SECTION_FUNC(TEXT, z_arm_pendsv)
     bl configure_builtin_stack_guard
     pop {r2, lr}
 #endif /* CONFIG_BUILTIN_STACK_GUARD */
+
+#ifdef CONFIG_ARM_SOC_CONTEXT_SAVE
+    push {r2, lr}
+    /* addr of _current->arch.soc_context in thread in r0 */
+    ldr r0, =_thread_offset_to_soc_context
+    add r0, r2
+    bl __soc_restore_context /* __soc_save_context(&soc_context) */
+#if defined(CONFIG_ARMV6_M_ARMV8_M_BASELINE)
+    pop {r2, r3}
+    mov lr, r3
+#else
+    pop {r2, lr}
+#endif /* CONFIG_ARMV6_M_ARMV8_M_BASELINE */
+#endif /* CONFIG_ARM_SOC_CONTEXT_SAVE */
 
 #ifdef CONFIG_INSTRUMENT_THREAD_SWITCHING
     /* Register the context switch */
