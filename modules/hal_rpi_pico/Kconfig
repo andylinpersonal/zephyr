@@ -65,6 +65,15 @@ config PICOSDK_USE_RAND
 	help
 	  Use the "rand" driver from pico-sdk
 
+config PICOSDK_USE_DCP_COPROC
+	bool "Enable DCP coprocessor of M33 core and maintain the state in kernel"
+	depends on ARM
+	select ARM_SOC_CONTEXT_SAVE
+	help
+	  Enable DCP coprocessor of M33 core and maintain the state in kernel.
+	  Enable this will save and restore the context across context switch,
+	  syscall and ISR.
+
 config PICOSDK_USE_HW_DIVIDER
 	bool "Use RP2040's hardware divider."
 	depends on SOC_SERIES_RP2040
