@@ -22,6 +22,14 @@ config RP2_REQUIRES_SECOND_STAGE_BOOT
 	bool
 	default y if FLASH_LOAD_OFFSET = 0x100
 
+config RP2_USE_SIO_DIVIDER
+	bool "Enable hardware divider in SIO block and maintain the state in kernel"
+	select ARM_SOC_CONTEXT_SAVE
+	help
+	  Enable hardware divider in SIO block and maintain the state in kernel.
+	  Enable this will save and restore the context across context switch,
+	  syscall and ISR.
+
 # Flash type used by the SoC. The board should select the one used.
 
 config RP2_FLASH_W25Q080

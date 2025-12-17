@@ -65,6 +65,21 @@ config PICOSDK_USE_RAND
 	help
 	  Use the "rand" driver from pico-sdk
 
+config PICOSDK_USE_HW_DIVIDER
+	bool "Use RP2040's hardware divider."
+	depends on SOC_SERIES_RP2040
+	select RP2_USE_SIO_DIVIDER
+	select RP2_USERSPACE_DIVIDER if USERSPACE
+	help
+	  Use RP2040's hardware divider in SIO block.
+
+config PICOSDK_DIVIDER_IN_RAM
+	bool "Put RP2040's divider functions into SRAM"
+	default n
+	depends on PICOSDK_USE_HW_DIVIDER
+	help
+	  Put RP2040's divider functions into SRAM.
+
 config PICOSDK_USE_BITOPS
 	bool "Use optimized bitops functions."
 	select NEED_LIBC_MEM_PARTITION if SOC_SERIES_RP2040
