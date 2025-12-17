@@ -1,7 +1,8 @@
-# Raspberry Pi RP2XXX MCU line
+# Raspberry Pi RP2040
 
 # Copyright (c) 2021 Nordic Semiconductor ASA
 # Copyright (c) 2021 Yonatan Schachter
+# Copyright (c) 2025 Andy Lin
 # SPDX-License-Identifier: Apache-2.0
 
 config SOC_SERIES_RP2040
@@ -29,6 +30,21 @@ config RP2_USE_SIO_DIVIDER
 	  Enable hardware divider in SIO block and maintain the state in kernel.
 	  Enable this will save and restore the context across context switch,
 	  syscall and ISR.
+
+config RP2_USERSPACE_SIO
+	bool "Expose SIO block except spinlocks to userspace"
+	depends on USERSPACE
+	help
+	  Expose some accelerators in SIO block except spinlocks to userspace. Only
+	  applicable if userspace were enabled. One extra MPU entry would be used.
+
+config RP2_USERSPACE_DIVIDER
+	bool "Expose hardware divider in SIO block to userspace"
+	depends on USERSPACE
+	depends on RP2_USE_SIO_DIVIDER
+	select RP2_USERSPACE_SIO
+	help
+	  Expose hardware divider in SIO block to userspace.
 
 # Flash type used by the SoC. The board should select the one used.
 
