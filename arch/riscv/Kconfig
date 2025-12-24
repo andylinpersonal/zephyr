@@ -418,6 +418,11 @@ config PMP_NO_LOCK_GLOBAL
 	  features. This allows application to dynamically reconfigure PMP
 	  entries without requiring hard reset.
 
+config PMP_WORKAROUND_TRANSPOSED_XRW_CFG
+	bool
+	help
+	  Workaround for PMPCFGx with transposed RWX attributes.
+
 endif #RISCV_PMP
 
 config PMP_STACK_GUARD

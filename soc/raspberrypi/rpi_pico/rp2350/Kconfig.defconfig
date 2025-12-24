@@ -14,6 +14,31 @@ config BUILD_OUTPUT_UF2_USE_FLASH_OFFSET
 config NUM_IRQS
 	default 52
 
+if RISCV
+
+# Only NAPOT mode is supported.
+config PMP_NO_TOR
+	default y
+
+config PMP_NO_NA4
+	default y
+
+# config PMP_NO_LOCK_GLOBAL
+# 	default y
+
+# Only first 8 regions are user-programmable.
+config PMP_SLOTS
+	default 8
+
+config PMP_GRANULARITY
+	default 32
+
+# Errata: RP2350-E6
+config PMP_WORKAROUND_TRANSPOSED_XRW_CFG
+	default y
+
+endif
+
 DT_CLK_SYS_PATH := $(dt_nodelabel_path,clk_sys)
 
 config SYS_CLOCK_HW_CYCLES_PER_SEC

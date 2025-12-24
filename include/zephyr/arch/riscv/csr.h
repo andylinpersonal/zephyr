@@ -133,9 +133,15 @@
 #define SATP_MODE_SV57	10
 #define SATP_MODE_SV64	11
 
+#if IS_ENABLED(CONFIG_PMP_WORKAROUND_TRANSPOSED_XRW_CFG)
 #define PMP_R		0x01
 #define PMP_W		0x02
 #define PMP_X		0x04
+#else
+#define PMP_R		0x04
+#define PMP_W		0x02
+#define PMP_X		0x01
+#endif
 #define PMP_A		0x18
 #define PMP_L		0x80
 #define PMP_SHIFT	2
