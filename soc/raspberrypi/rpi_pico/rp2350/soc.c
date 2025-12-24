@@ -12,6 +12,12 @@
  * for the Raspberry Pi RP235xx (RP2350A, RP2350B, RP2354A, RP2354B).
  */
 
+#include <pico/bootrom.h>
+#include <boot/picoboot.h>
+#include <zephyr/kernel.h>
+#include <zephyr/arch/cpu.h>
+#include <zephyr/sys/util.h>
+
 #if CONFIG_SOC_RESET_HOOK
 #include <pico/runtime_init.h>
 #if CONFIG_RISCV
@@ -29,3 +35,12 @@ void soc_reset_hook(void)
 }
 
 #endif /* CONFIG_SOC_RESET_HOOK */
+
+#if CONFIG_RISCV
+void sys_arch_reboot(int type)
+{
+	ARG_UNUSED(type);
+	/* Cannot be 0 ms */
+	rom_reboot(REBOOT2_FLAG_REBOOT_TYPE_NORMAL | REBOOT2_FLAG_NO_RETURN_ON_SUCCESS, 1, 0, 0);
+}
+#endif
