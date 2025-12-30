@@ -79,3 +79,15 @@ config PICOSDK_MEMOPS_IN_RAM
 	depends on PICOSDK_USE_ROM_MEMOPS
 	help
 	  Put wrapper of memcpy and memset into SRAM.
+
+config PICOSDK_USE_MUL64
+	bool "Use the optimized implementation of __aeabi_lmul."
+	depends on SOC_SERIES_RP2040
+	help
+	  Use the optimized implementation of __aeabi_lmul.
+
+config PICOSDK_MUL64_IN_RAM
+	bool "Put __aeabi_lmul into SRAM"
+	depends on PICOSDK_USE_MUL64
+	help
+	  Put __aeabi_lmul into SRAM.
