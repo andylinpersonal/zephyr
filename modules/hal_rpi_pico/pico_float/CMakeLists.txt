@@ -89,7 +89,8 @@ zephyr_system_include_directories(${rp2_common_dir}/pico_float/include)
 
 zephyr_compile_definitions(LIB_PICO_FLOAT=1)
 
-if(CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_ROM)
+if(CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_ROM OR
+   CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_VFP)
   # New library for scoping and ensure pico_sdk depends on it
   set(pico_sdk_target ${ZEPHYR_CURRENT_LIBRARY})
   zephyr_library()
@@ -155,6 +156,31 @@ if(CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_ROM)
 
   # Wrap all functions with shim
   wrap_float_functions()
+elseif(CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_VFP)
+  # rp235x/m33 vfp
+  zephyr_compile_definitions(LIB_PICO_FLOAT_VFP=1 LIB_PICO_FLOAT_PICO=1)
+
+  zephyr_library_sources(
+    ${rp2_common_dir}/pico_float/float_math.c
+    # The following files have IN_RAM support.
+    ${rp2_common_dir}/pico_float/float_common_m33.S
+    ${rp2_common_dir}/pico_float/float_conv32_vfp.S
+    ${rp2_common_dir}/pico_float/float_sci_m33_vfp.S
+  )
+
+  wrap_float_functions(
+    # for these 3, arguably compiler is probably inlining anyway, but use the cmopiler's
+    # version for explicit AEABI calls
+    NO_AEABI_ARITHMETIC
+    NO_AEABI_CMP
+    NO_AEABI_CONV_32
+    #NO_AEABI_CONV_64   # we have optimized M33 versions
+    NO_AEABI_CONV_DOUBLE
+    # we don't have an optimized vfp or m33 sqrtf available
+    NO_SQRTF
+    #NO_SCI             # we have optimized VFP versions
+    #NO_SCI_EXTRA       # todo - are our versions better than what GCC proides?
+  )
 elseif(CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_TRAP)
   zephyr_compile_definitions(LIB_PICO_FLOAT_NONE=1)
   zephyr_library_sources(${rp2_common_dir}/pico_float/float_none.S)

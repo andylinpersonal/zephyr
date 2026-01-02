@@ -83,6 +83,7 @@ choice PICOSDK_USE_SINGLE_FP_IMPL
 	prompt "Single precision floating point implementation"
 	depends on PICOSDK_USE_SINGLE_FP
 	default PICOSDK_USE_SINGLE_FP_IMPL_ROM if SOC_SERIES_RP2040
+	default PICOSDK_USE_SINGLE_FP_IMPL_VFP if SOC_SERIES_RP2350 && !RISCV
 	help
 	  Choose the active implementation of single precision FP routines.
 
@@ -109,6 +110,17 @@ config PICOSDK_USE_SINGLE_FP_IMPL_ROM
 
 	  * See the datasheet for limitations and availability of ROM functions.
 	  Different chip revisions may have different feature set.
+
+config PICOSDK_USE_SINGLE_FP_IMPL_VFP
+	bool "Use standard ARM VFP for single precision arithmetics"
+	depends on SOC_SERIES_RP2350
+	depends on !RISCV
+	depends on FPU
+	depends on FP_SOFTABI
+	help
+	  Use VFP FPU to accelerate all single precision arithmetics. Currently,
+	  float point routines in pico-sdk only support softfp ABI. (pico-sdk#2785)
+
 endchoice
 
 config PICOSDK_SINGLE_FP_IN_RAM
