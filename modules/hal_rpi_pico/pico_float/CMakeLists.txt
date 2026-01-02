@@ -90,6 +90,7 @@ zephyr_system_include_directories(${rp2_common_dir}/pico_float/include)
 zephyr_compile_definitions(LIB_PICO_FLOAT=1)
 
 if(CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_ROM OR
+   CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_DCP OR
    CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_VFP)
   # New library for scoping and ensure pico_sdk depends on it
   set(pico_sdk_target ${ZEPHYR_CURRENT_LIBRARY})
@@ -155,6 +156,22 @@ if(CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_ROM)
   )
 
   # Wrap all functions with shim
+  wrap_float_functions()
+elseif(CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_DCP)
+  # rp235x/m33 dcp
+  zephyr_compile_definitions(LIB_PICO_FLOAT_DCP=1)
+
+  zephyr_library_sources(
+    ${rp2_common_dir}/pico_float/float_math.c
+    # Following files has ramfunc support.
+    ${rp2_common_dir}/pico_float/float_aeabi_dcp.S # TODO
+    ${rp2_common_dir}/pico_float/float_common_m33.S
+    ${rp2_common_dir}/pico_float/float_sci_m33.S
+  )
+
+  # Disable the inlining of single fp arithmetics.
+  zephyr_compile_options(-msoft-float)
+  # Wrap all functions to avoid the use of VFP.
   wrap_float_functions()
 elseif(CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_VFP)
   # rp235x/m33 vfp

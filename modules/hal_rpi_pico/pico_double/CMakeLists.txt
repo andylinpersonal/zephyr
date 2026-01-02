@@ -72,7 +72,8 @@ zephyr_system_include_directories(${rp2_common_dir}/pico_double/include)
 
 zephyr_compile_definitions(LIB_PICO_DOUBLE=1)
 
-if(CONFIG_PICOSDK_USE_DOUBLE_FP_IMPL_ROM)
+if(CONFIG_PICOSDK_USE_DOUBLE_FP_IMPL_ROM OR
+   CONFIG_PICOSDK_USE_DOUBLE_FP_IMPL_DCP)
   set(pico_sdk_target ${ZEPHYR_CURRENT_LIBRARY})
   zephyr_library()
   target_link_libraries(${pico_sdk_target} PRIVATE ${ZEPHYR_CURRENT_LIBRARY})
@@ -138,6 +139,20 @@ if(CONFIG_PICOSDK_USE_DOUBLE_FP_IMPL_ROM)
     ${rp2_common_dir}/pico_double/double_math.c
     ${rp2_common_dir}/pico_double/double_v1_rom_shim_rp2040.S
   )
+  wrap_double_functions()
+elseif(CONFIG_PICOSDK_USE_DOUBLE_FP_IMPL_DCP)
+  # rp235x/m33 dcp
+  zephyr_compile_definitions(LIB_PICO_DOUBLE_PICO=1)
+
+  zephyr_library_sources(
+    ${rp2_common_dir}/pico_double/double_math.c
+    # Following files has ramfunc support.
+    ${rp2_common_dir}/pico_double/double_aeabi_dcp.S
+    ${rp2_common_dir}/pico_double/double_fma_dcp.S
+    ${rp2_common_dir}/pico_double/double_sci_m33.S
+    ${rp2_common_dir}/pico_double/double_conv_m33.S
+  )
+
   wrap_double_functions()
 elseif(CONFIG_PICOSDK_USE_DOUBLE_FP_IMPL_TRAP)
   zephyr_compile_definitions(LIB_PICO_DOUBLE_NONE=1)

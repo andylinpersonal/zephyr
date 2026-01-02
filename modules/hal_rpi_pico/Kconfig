@@ -112,6 +112,17 @@ config PICOSDK_USE_SINGLE_FP_IMPL_ROM
 	  * See the datasheet for limitations and availability of ROM functions.
 	  Different chip revisions may have different feature set.
 
+config PICOSDK_USE_SINGLE_FP_IMPL_DCP
+	bool "Use DCP coprocessor for all single precision floating point arithmetics"
+	depends on SOC_SERIES_RP2350
+	depends on !RISCV
+	depends on !FPU
+	select PICOSDK_USE_DCP_COPROC
+	select PICOSDK_USE_DOUBLE_FP
+	help
+	  Use DCP coprocessor instead of ARM VFP. For Cortex-M33 only. Have some
+	  shared data with `pico_double` so selecting it as well.
+
 config PICOSDK_USE_SINGLE_FP_IMPL_VFP
 	bool "Use standard ARM VFP for single precision arithmetics"
 	depends on SOC_SERIES_RP2350
@@ -164,6 +175,7 @@ choice PICOSDK_USE_DOUBLE_FP_IMPL
 	prompt "Double precision float point implementation"
 	depends on PICOSDK_USE_DOUBLE_FP
 	default PICOSDK_USE_DOUBLE_FP_IMPL_ROM if SOC_SERIES_RP2040
+	default PICOSDK_USE_DOUBLE_FP_IMPL_DCP if SOC_SERIES_RP2350 && !RISCV
 	help
 	  Choose the active implementation of double precision floating point routines.
 
@@ -190,6 +202,14 @@ config PICOSDK_USE_DOUBLE_FP_IMPL_ROM
 
 	  * See the datasheet for limitations and availability of ROM functions.
 	  Different chip revisions may have different feature set.
+
+config PICOSDK_USE_DOUBLE_FP_IMPL_DCP
+	bool "Use DCP coprocessor for all double precision arithmetics"
+	depends on SOC_SERIES_RP2350
+	depends on !RISCV
+	select PICOSDK_USE_DCP_COPROC
+	help
+	  Use DCP accelerated double FP arithmetics. For Cortex-M33 only.
 
 endchoice
 
