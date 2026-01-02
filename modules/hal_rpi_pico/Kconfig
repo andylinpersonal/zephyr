@@ -74,6 +74,67 @@ config PICOSDK_USE_DCP_COPROC
 	  Enable this will save and restore the context across context switch,
 	  syscall and ISR.
 
+config PICOSDK_USE_SINGLE_FP
+	bool "Enable optimized single precision floating point routines for RPxxxx."
+	help
+	  Use optimized single precision floating point routines for RPxxxx.
+
+choice PICOSDK_USE_SINGLE_FP_IMPL
+	prompt "Single precision floating point implementation"
+	depends on PICOSDK_USE_SINGLE_FP
+	default PICOSDK_USE_SINGLE_FP_IMPL_ROM if SOC_SERIES_RP2040
+	help
+	  Choose the active implementation of single precision FP routines.
+
+config PICOSDK_USE_SINGLE_FP_IMPL_TRAP
+	bool "Disable all single precision floating point functions."
+	help
+	  Any use of FP math will panic. Included for debugging only.
+
+config PICOSDK_USE_SINGLE_FP_IMPL_ROM
+	bool "Wrap all single precision floating point functions with the ROM one."
+	depends on !LINKER_SORT_BY_ALIGNMENT
+	depends on SOC_SERIES_RP2040
+	select NEED_LIBC_MEM_PARTITION
+	select RP2_USE_SIO_DIVIDER
+	select RP2_USERSPACE_DIVIDER if USERSPACE
+	select RPI_PICO_USE_ROMFUNC
+	help
+	  * The ROM floating point routines contains unsafe use of SIO divider so
+	  we enable RP2_USE_SIO_DIVIDER here.
+
+	  * LINKER_SORT_BY_ALIGNMENT is incompatible with pico-sdk's soft fp
+	  routines, which rely on precise placement of various functions. Such
+	  unexpected sorting will break some branch instructions.
+
+	  * See the datasheet for limitations and availability of ROM functions.
+	  Different chip revisions may have different feature set.
+endchoice
+
+config PICOSDK_SINGLE_FP_IN_RAM
+	bool "Put basic single precision floating point functions into SRAM."
+	default n
+	depends on PICOSDK_USE_SINGLE_FP
+	help
+	  Put basic single precision floating point functions into SRAM.
+
+config PICOSDK_SINGLE_FP_PROPAGATE_NANS
+	bool "Propagate NANs for soft fp routines."
+	default y
+	depends on PICOSDK_USE_SINGLE_FP
+	depends on !PICOSDK_SINGLE_FP_IN_RAM
+	help
+	  Propagate NANs for soft fp routines. Disable for PICOSDK_SINGLE_FP_IN_RAM
+	  due to pico-sdk issue #2771.
+
+config PICOSDK_USE_SINGLE_FP_IMPL_ROM_V1
+	bool "Support for RP2040 ROM V1"
+	default y
+	depends on PICOSDK_USE_SINGLE_FP_IMPL_ROM
+	help
+	  Support for RP2040 ROM V1. See the datasheet for the differences between V1
+	  and later revisions.
+
 config PICOSDK_USE_HW_DIVIDER
 	bool "Use RP2040's hardware divider."
 	depends on SOC_SERIES_RP2040
