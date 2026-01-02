@@ -84,6 +84,7 @@ choice PICOSDK_USE_SINGLE_FP_IMPL
 	depends on PICOSDK_USE_SINGLE_FP
 	default PICOSDK_USE_SINGLE_FP_IMPL_ROM if SOC_SERIES_RP2040
 	default PICOSDK_USE_SINGLE_FP_IMPL_VFP if SOC_SERIES_RP2350 && !RISCV
+	default PICOSDK_USE_SINGLE_FP_IMPL_HAZARD3 if SOC_SERIES_RP2350 && RISCV
 	help
 	  Choose the active implementation of single precision FP routines.
 
@@ -120,6 +121,11 @@ config PICOSDK_USE_SINGLE_FP_IMPL_VFP
 	help
 	  Use VFP FPU to accelerate all single precision arithmetics. Currently,
 	  float point routines in pico-sdk only support softfp ABI. (pico-sdk#2785)
+
+config PICOSDK_USE_SINGLE_FP_IMPL_HAZARD3
+	bool "Enable optimized single precision functions for hazard3"
+	depends on SOC_SERIES_RP2350
+	depends on RISCV
 
 endchoice
 

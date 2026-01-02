@@ -181,6 +181,22 @@ elseif(CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_VFP)
     #NO_SCI             # we have optimized VFP versions
     #NO_SCI_EXTRA       # todo - are our versions better than what GCC proides?
   )
+elseif(CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_HAZARD3)
+  zephyr_compile_definitions(LIB_PICO_FLOAT_PICO=1)
+
+  function(set_float_single_hazard3_compiler_args target)
+    if(CONFIG_PICOSDK_SINGLE_FP_IN_RAM)
+      target_compile_options(${target}
+        PRIVATE "-DPICO_FLOAT_IN_RAM=1" "-DRAM_SECTION_NAME(x)=.ramfunc.##x")
+    endif()
+  endfunction()
+
+  # Replace the default libgcc implementation with pico-sdk's one.
+  pico_patch_sdk_file(
+    PREFIX "float_single_hazard3"
+    SOURCE "${rp2_common_dir}/pico_float/float_single_hazard3.S"
+    PRE_PATCH_HOOKS  set_float_single_hazard3_compiler_args
+  )
 elseif(CONFIG_PICOSDK_USE_SINGLE_FP_IMPL_TRAP)
   zephyr_compile_definitions(LIB_PICO_FLOAT_NONE=1)
   zephyr_library_sources(${rp2_common_dir}/pico_float/float_none.S)
