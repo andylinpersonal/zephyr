@@ -10,6 +10,7 @@
 #include <inttypes.h>
 #include <zephyr/arch/common/exc_handle.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/task_wdt/task_wdt.h>
 LOG_MODULE_DECLARE(os, CONFIG_KERNEL_LOG_LEVEL);
 
 #ifdef CONFIG_USERSPACE
@@ -81,6 +82,11 @@ FUNC_NORETURN void z_riscv_fatal_error(unsigned int reason,
 				       const struct arch_esf *esf)
 {
 	__maybe_unused _callee_saved_t *csf = NULL;
+
+#ifdef CONFIG_TASK_WDT
+	task_wdt_suspend();
+#endif
+
 	unsigned long mcause;
 
 	__asm__ volatile("csrr %0, mcause" : "=r" (mcause));
